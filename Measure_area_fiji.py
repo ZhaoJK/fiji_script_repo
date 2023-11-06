@@ -1,6 +1,8 @@
 # Author: Jiakuan
 # Date: 20231027 14:55
-# 
+# Update data 20231106
+#    wand tools torelatance
+# close windows if do not need
 # Measure Fascia Area by open lif files 
 import os,re
 from ij import IJ, ImagePlus, WindowManager
@@ -38,7 +40,7 @@ def resetStackCurve(curImp):
         IJ.resetMinAndMax(curImp)
 
 # Find Object
-def findObject(imp):
+def findObject(imp, tolerance=180):
     ip= imp.getProcessor()
     globalMax = [0,0,0]
     x = 0
@@ -49,7 +51,7 @@ def findObject(imp):
         #ImageStatistics won't work if we have no ImagePlus
             v = ip.getPixelValue(x, y)         #float 
             if globalMax[0] < v: globalMax = [v,x, y]
-    IJ.doWand(imp, globalMax[1], globalMax[2], 180, "8-connected")
+    IJ.doWand(imp, globalMax[1], globalMax[2], tolerance, "8-connected")
 
 
 # open lif with BF
@@ -170,12 +172,14 @@ for imp in imps:
     imp.show()
     wait_user = WaitForUserDialog("Waiting", "Create selection!")
     wait_user.show()
+    if WindowManager.getWindow(imp.getTitle()) is None:
+        continue
     wandRoi = imp.getRoi()
     
     clear_noize(imp)
     center_object(imp)
     
-    findObject(imp)
+    findObject(imp, 200)
     folderName = rename_title(imp)
     measureArea(imp)
     imp.show()
