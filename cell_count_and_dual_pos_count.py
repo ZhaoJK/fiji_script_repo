@@ -8,7 +8,7 @@ from ij.plugin import Duplicator, ChannelArranger, RGBStackMerge
 from ij.plugin.frame import RoiManager
 from ij.gui import Roi
 from java.io import File
-
+import os, re
 from inra.ijpb.label import LabelImages
 from  inra.ijpb.measure.region2d import Centroid
 from inra.ijpb.plugins import DrawLabelsAsOverlayPlugin
@@ -159,18 +159,22 @@ def count_cell_and_nuclei(original_image):
 def main():
     # Get the currently open image
     original_image = WindowManager.getCurrentImage()
+    original_image.setTitle(re.sub("\\.tiff|\\.jpg|\\.tif", "", original_image.getTitle()))
     
     rm = RoiManager.getInstance()
     if rm is None:
         rm = RoiManager()
         print("No ROIs in the ROI Manager!")
+        original_image.setRoi(200,200,600,600);
         exit()
 
     rois = rm.getRoisAsArray()
-    print("Image"+ "\t"+ "Nuclei"+ "\t"+ "Dual positive")
+    print("Image"+ "\t"+ "ROI" + "\t"+ "Nuclei"+ "\t"+ "Dual positive")
     for i in range(len(rois)):
         original_image.setRoi(rois[i])
         count_cell_and_nuclei(original_image)
-    rm.runCommand("Save", original_image.getOriginalFileInfo().directory + imp.getTitle() + "_roi.zip")
+    rm.runCommand("Save", original_image.getOriginalFileInfo().directory + original_image.getTitle() + "_RoiSet.zip")
+    #rm.reset()
 if __name__ == "__main__":
     main()
+    print("Finished!!!")
